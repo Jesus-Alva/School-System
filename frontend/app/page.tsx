@@ -1,10 +1,6 @@
-// app/page.tsx o pages/index.tsx
-import Page from "./dashboard/page";
+// app/page.tsx
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <main className="relative h-full">
-      <Page />
-    </main>
-  );
+  redirect('/dashboard');
 }
