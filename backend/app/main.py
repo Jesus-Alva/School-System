@@ -15,11 +15,13 @@ app = FastAPI(
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción cambiar a dominios específicos
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
 @app.get("/")
 def read_root():
@@ -27,7 +29,7 @@ def read_root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy"}
+    return {"status": "ok", "env": settings.ENV}
 
 @app.get("/test-celery")
 def test_celery():
@@ -37,3 +39,10 @@ def test_celery():
         return {"task_id": result.id}
     except Exception as e:
         return {"error": str(e)}
+
+@app.exception_handler(RequestValidationError)
+async def validation_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "Datos inválidos", "errors": exc.errors()},
+    )
