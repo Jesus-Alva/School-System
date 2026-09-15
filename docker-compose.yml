@@ -1,13 +1,13 @@
 services:
-  backend:
+  architecture-fastapi-backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: fastapi-web
+    container_name: architecture-fastapi-backend
     ports:
-      - "${BACKEND_PORT}:8000"
+      - "8009:8000"
     depends_on:
-      - postgres
+      - architecture-fastapi-postgres
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
@@ -26,13 +26,13 @@ services:
       retries: 3
       start_period: 40s
 
-  frontend:
+  architecture-fastapi-frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: nextjs-frontend
+    container_name: architecture-fastapi-frontend
     ports:
-      - "${FRONTEND_PORT}:3000"
+      - "3009:3000"
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
@@ -43,14 +43,14 @@ services:
     command: npm run dev
     restart: unless-stopped
     depends_on:
-      backend:                     # <--- CORREGIDO: antes decía "web"
+      architecture-fastapi-backend:
         condition: service_healthy
     networks:
       - app-network
 
-  postgres:
+  architecture-fastapi-postgres:
     image: postgres:15
-    container_name: postgres-db
+    container_name: architecture-fastapi-postgres
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -68,9 +68,9 @@ services:
       timeout: 5s
       retries: 5
 
-  pgadmin:
+  architecture-fastapi-pgadmin:
     image: dpage/pgadmin4
-    container_name: pgadmin
+    container_name: architecture-fastapi-pgadmin
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
@@ -80,7 +80,7 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
-      postgres:
+      architecture-fastapi-postgres:
         condition: service_healthy
     networks:
       - app-network
